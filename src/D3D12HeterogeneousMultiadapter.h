@@ -114,7 +114,7 @@ private:
 	UINT m_rtvDescriptorSizes[GraphicsAdaptersCount];
 	UINT m_srvDescriptorSizes[GraphicsAdaptersCount];
 	DXGI_ADAPTER_DESC1 m_adapterDescs[GraphicsAdaptersCount];
-	ComPtr<IDXGISwapChain3> m_swapChain[GraphicsAdaptersCount];
+	ComPtr<IDXGISwapChain3> m_swapChain;
 	ComPtr<ID3D12Device> m_devices[GraphicsAdaptersCount];
 	ComPtr<ID3D12CommandAllocator> m_directCommandAllocators[GraphicsAdaptersCount][FrameCount];
 	ComPtr<ID3D12CommandAllocator> m_copyCommandAllocators[FrameCount];

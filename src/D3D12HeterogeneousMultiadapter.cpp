@@ -119,7 +119,7 @@ void D3D12HeterogeneousMultiadapter::LoadPipeline()
 	IDXGIAdapter1* ppAdapters[] = { primaryAdapter.Get(), secondaryAdapter.Get() };
 	for (UINT i = 0; i < GraphicsAdaptersCount; i++)
 	{
-		ThrowIfFailed(D3D12CreateDevice(ppAdapters[i], D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_devices[i])));
+		ThrowIfFailed(D3D12CreateDevice(ppAdapters[i], D3D_FEATURE_LEVEL_12_0, IID_PPV_ARGS(&m_devices[i])));
 		ThrowIfFailed(ppAdapters[i]->GetDesc1(&m_adapterDescs[i]));
 	}
 
@@ -147,11 +147,14 @@ void D3D12HeterogeneousMultiadapter::LoadPipeline()
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapChainDesc.SampleDesc.Count = 1;
 
+	// This sample does not support fullscreen transitions.
+	ThrowIfFailed(factory->MakeWindowAssociation(Win32Application::GetHwnd(), DXGI_MWA_NO_ALT_ENTER));
+
 	for (UINT i = 0; i < GraphicsAdaptersCount; i++)
 	{
 		ComPtr<IDXGISwapChain1> swapChain;
 		ThrowIfFailed(factory->CreateSwapChainForHwnd(
-			m_directCommandQueues[Secondary].Get(),		// Swap chain needs the queue so that it can force a flush on it.
+			m_directCommandQueues[i].Get(),		// Swap chain needs the queue so that it can force a flush on it.
 			Win32Application::GetHwnd(),
 			&swapChainDesc,
 			nullptr,
@@ -159,12 +162,10 @@ void D3D12HeterogeneousMultiadapter::LoadPipeline()
 			&swapChain
 		));
 
-		// This sample does not support fullscreen transitions.
-		ThrowIfFailed(factory->MakeWindowAssociation(Win32Application::GetHwnd(), DXGI_MWA_NO_ALT_ENTER));
-
-		ThrowIfFailed(swapChain.As(&m_swapChain[i]));
-		m_frameIndex = m_swapChain[i]->GetCurrentBackBufferIndex();
+		ThrowIfFailed(swapChain.As(&m_swapChain));
 	}
+
+	m_frameIndex = m_swapChain->GetCurrentBackBufferIndex();
 
 	// Create descriptor heaps.
 	{
